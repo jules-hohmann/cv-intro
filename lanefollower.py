@@ -8,10 +8,11 @@ import random as rand
 from motor_test import test_motor
 import time
 from pymavlink import mavutil
-IP_ADDRESS = "10.29.77.218"
-vcap = cv2.VideoCapture(f"rtsp://{IP_ADDRESS}:8554/rovcam")
+import something
 
-img = None
+
+video = something.Video()
+
 
 #cap = cv2.VideoCapture('AUV_Vid.mkv')
 
@@ -224,30 +225,23 @@ if __name__ == "__main__":
     mav_connection.wait_heartbeat()
     # Arm the ROV and wait for confirmation
     arm_rov(mav_connection)
-
-    MAX_RETRY = 100
-    count = 0
-    while count < MAX_RETRY:
-        count += 1
-        # Obtain the frame
-        ret, frame = vcap.read()
-
-        # Check frame was received successfully
-        if ret:
-            # got a frame, close the cap and return the frame
-            print(" got a frame ")
-            img = frame
-            a=detect_lines(img, 36, 80, 3)
-            b = detect_lanes(a)
-            plt.imshow(draw_lanes(img, b))
-            plt.show()
-            if b == None or len(b) == 0:
-                print("no recomended direction")
-            else:
-                lane_center = get_lane_center(b)
-                direction = recommend_direction(lane_center[0])
-                turning = recommend_turn(lane_center[1])
-                movetowardlane(direction, turning)
-            vcap.release()
-
-    vcap.release()
+    waited = 0
+    while not video.frame_available():
+        waited += 1
+        print('\r  Frame not available (x{})'.format(waited), end='')
+        # cv2.waitKey(30)
+    if video.frame_available():
+        frame = video.frame()
+        img = frame
+        a=detect_lines(img, 36, 80, 3)
+        b = detect_lanes(a)
+        plt.imshow(draw_lanes(img, b))
+        plt.show()
+        if b == None or len(b) == 0:
+            print("no recomended direction")
+        else:
+            lane_center = get_lane_center(b)
+            direction = recommend_direction(lane_center[0])
+            turning = recommend_turn(lane_center[1])
+            movetowardlane(direction, turning)
+    
