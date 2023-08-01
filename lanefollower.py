@@ -28,7 +28,8 @@ def common_member(a, b):
 
 def detect_lines(img, threshold1=50, threshold2=150, apertureSize=3, minLineLength=100,maxLineGap=20):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # convert to grayscale
-    edges = cv2.Canny(gray, threshold1, threshold2, apertureSize) # detect edges
+    blur = cv2.medianBlur(gray, 31)
+    edges = cv2.Canny(blur, threshold1, threshold2, apertureSize) # detect edges
     lines = cv2.HoughLinesP(edges,10,np.pi/210,70,minLineLength=270,maxLineGap=25) # detect lines
     if lines is not None:
         return((lines))
