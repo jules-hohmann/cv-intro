@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import random as rand
-from motor_test import test_motor
 from time import sleep
 from pymavlink import mavutil
 import something
@@ -10,7 +9,7 @@ import lanedection as ld
 from bluerov_interface import BlueROV
 
 video = something.Video()
-pid_horizontal = pid(K_p=0.1, K_i=0.0, K_d=0.01, integral_limit=1)
+pid_horizontal = pid(K_p=0.2, K_i=0.0, K_d=0.0, integral_limit=1)
 # Create the mavlink connection
 mav_comn = mavutil.mavlink_connection("udpin:0.0.0.0:14550")
 # Create the BlueROV object
@@ -41,7 +40,7 @@ def _get_frame():
                 frame = video.frame()
                 img = frame
                 a=ld.detect_lines(img, 36, 80, 3)
-                b = ld.detect_lanes(a)
+                b = ld.detect_lanes(a, img)
                 plt.imshow(ld.draw_lanes(img, b))
                 plt.show()
                 if b == None or len(b) == 0:
@@ -49,7 +48,7 @@ def _get_frame():
                     longitudinal_power = 0.1
                     lateral_power = 0
                 else:
-                    lane_center = ld.get_lane_center(b)
+                    lane_center = ld.get_lane_center(b, img)
                     direction = ld.recommend_direction(lane_center[0], img)
                     turning = ld.recommend_turn(lane_center[1])
                     if direction == "right":

@@ -2,8 +2,8 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from motor_test import test_motor
 from pymavlink import mavutil
+import random as rand
 
 def common_member(a, b):
     a_set = set(a)
@@ -71,7 +71,7 @@ def get_color():
     a=rand.randint(0,255)
     return((a,b,c))
 
-def detect_lanes(lines):
+def detect_lanes(lines, img):
     lanes = []
 
     if lines is None:
@@ -102,7 +102,7 @@ def draw_lanes(image, lanes):
             draw_lines(image, lane, color)
     return image
 
-def get_lane_center(lanes):
+def get_lane_center(lanes, img):
     
     if lanes is None:
         pass
@@ -154,63 +154,3 @@ def get_distance_from_lane(lane_center = [0, 0], img = 5):
         d = np.abs(img-lane_center[0])
         return d
 
-def arm_rov(mav_connection):
-    """
-    Arm the ROV, wait for confirmation
-    """
-    mav_connection.arducopter_arm()
-    print("Waiting for the vehicle to arm")
-    mav_connection.motors_armed_wait()
-    print("Armed!")
-
-def disarm_rov(mav_connection):
-    """
-    Disarm the ROV, wait for confirmation
-    """
-    mav_connection.arducopter_disarm()
-    print("Waiting for the vehicle to disarm")
-    mav_connection.motors_disarmed_wait()
-    print("Disarmed!")
-
-def run_motors_timed(mav_connection, seconds: int, motor_settings: list) -> None:
-    """
-    Run the motors for a set time
-    :param mav_connection: The mavlink connection
-    :param time: The time to run the motors
-    :param motor_settings: The motor settings, a list of 6 values -100 to 100
-    :return: None
-    """
-    step = 0
-    while step < seconds:
-        for i in range(len(motor_settings)):
-            test_motor(mav_connection=mav_connection, motor_id=i, power=motor_settings[i])
-        # time.sleep(0.2)
-        step += 0.2
-
-def forward(t, m):
-    run_motors_timed(mav_connection, seconds=t, motor_settings=[m, m, -m, -m, 0, 0])
-         
-def rightstrafe(t, m):
-         run_motors_timed(mav_connection, seconds = t, motor_settings= [m, -m, m, -m])
-
-def leftstrafe(t, m):
-        run_motors_timed(mav_connection, seconds=t, motor_settings= [ -m, m, -m, m])
-
-def leftturn(t,m):
-         run_motors_timed(mav_connection, seconds=t, motor_settings=[-m, m, m, -m, 0, 0])
-
-def rightturn(t, m):
-        run_motors_timed(mav_connection, seconds=t, motor_settings=[m, -m, -m, m, 0, 0])
-
-def movetowardlane(direction, turning):
-    
-    if direction == "right":
-        rightstrafe(3, 30)
-    if direction == "left":
-        leftstrafe(3, 30)
-    if direction == "forward":
-        forward(3, 30)
-    if turning == "turn left":
-        leftturn(3, 30)
-    if turning == "turn right":
-        rightturn(3, 30)
